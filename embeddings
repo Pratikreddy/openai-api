@@ -1,0 +1,38 @@
+class EmbeddingsComparer:
+    def __init__(self, api_key, model="text-embedding-ada-002"):
+        self.client = openai.OpenAI(api_key=api_key)
+        self.model = model
+        self.text_cleaner = TextCleaner()
+
+    def get_embedding(self, text):
+        text = self.text_cleaner.clean_text(text)
+        response = self.client.embeddings.create(
+            input=text,
+            model=self.model
+        )
+        embedding = response.data[0].embedding
+        return embedding
+
+    def cosine_similarity(self, a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+    def compare_with_expected(self, output, expected_output):
+        output_embedding = self.get_embedding(output)
+        expected_embedding = self.get_embedding(expected_output)
+        similarity = self.cosine_similarity(output_embedding, expected_embedding)
+        return similarity * 100 
+
+
+api_key = 'peace'
+comparer = EmbeddingsComparer(api_key)
+
+output1 = "SELECT transcript_date FROM Transcripts ORDER BY transcript_date DESC LIMIT 1;"
+output2 = "```sql SELECT MAX(transcript_date) AS last_transcript_date FROM Transcripts; ```"
+expected_output = "SELECT transcript_date FROM Transcripts ORDER BY transcript_date DESC LIMIT 1"
+
+similarity1 = comparer.compare_with_expected(output1, expected_output)
+similarity2 = comparer.compare_with_expected(output2, expected_output)
+
+print(f"Model 1's similarity to expected output: {similarity1:.2f}%")
+print(f"Model 2's similarity to expected output: {similarity2:.2f}%")
+
