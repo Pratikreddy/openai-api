@@ -1,0 +1,57 @@
+from openai import OpenAI
+
+# Instantiate the OpenAI client with your API key
+client = OpenAI(api_key='lol')
+
+def chat_with_gpt(prompt):
+    # Send a prompt to the model and get the response
+    response = client.chat.completions.create(
+        model="gpt-4-0125-preview",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    # Return the text part of the model's response
+    return response.choices[0].message.content
+
+def grade_answer(student_answer, expected_answer, key_terms):
+    # Basic grading criteria
+    grades = {
+        'A': "Excellent explanation with correct use of technical terms and concepts.",
+        'B': "Good understanding, but lacks some specific terms.",
+        'C': "Correct analogy, but lacks technical terms and clarity.",
+        'E': "Incorrect definitions, mixed up the concepts.",
+        'F': "Not related to computer science concepts."
+    }
+
+    # Check for key terms and concepts in the student's answer
+    if all(term in student_answer for term in key_terms):
+        return 'A', grades['A']
+    elif any(term in student_answer for term in key_terms):
+        return 'B', grades['B']
+    elif 'stack' in student_answer or 'queue' in student_answer:
+        return 'C', grades['C']
+    elif any(term in expected_answer for term in student_answer.split()):
+        return 'E', grades['E']
+    else:
+        return 'F', grades['F']
+
+# Function to process student answers
+def process_student_answers(student_answers, expected_answer, key_terms):
+    for student_answer in student_answers:
+        grade, remark = grade_answer(student_answer, expected_answer, key_terms)
+        print(f"Student Answer: {student_answer}\nGrade: {grade}, Remark: {remark}\n")
+
+# Example usage
+expected_answer = "A stack is a data structure that follows the Last In First Out (LIFO) principle, where the last element added is the first one to be removed. A queue, on the other hand, follows the First In First Out (FIFO) principle, where the first element added is the first one to be removed."
+student_answers = [
+    "A stack is something you use to put plates on in the kitchen, and a queue is a line you stand in at the movie theater.",
+    "In a stack, elements are added and removed from the top only. In a queue, elements are added at the back and removed from the front.",
+    "A stack uses FIFO, where you remove the item that was added first. A queue uses LIFO, where you remove the item that was added last.",
+    "A queue is like waiting in line for a bus, where the first person in line is the first to board. A stack is like a pile of books, where you remove the book from the top of the pile first.",
+    "Both stack and queue are containers to store data, but a stack operates on LIFO, meaning the last element added is the first to be removed. A queue operates on FIFO, meaning the first element added is the first to be removed. This principle is fundamental in many algorithms and data structure implementations."
+]
+key_terms = ['LIFO', 'FIFO', 'data structure', 'element', 'added', 'removed']
+
+process_student_answers(student_answers, expected_answer, key_terms)
