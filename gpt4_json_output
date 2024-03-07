@@ -1,2 +1,59 @@
 #get the output from gpt 4 turbo models in the form of a json
 
+#gpt 4 turbo json mode 
+import json
+from openai import OpenAI
+
+
+api_key= ""
+client = OpenAI(api_key=api_key)
+
+question = "How do a stack and a queue differ in their operation and principle?"
+expected_answer = "A stack is a data structure that follows the Last In First Out (LIFO) principle, where the last element added is the first one to be removed. A queue, on the other hand, follows the First In First Out (FIFO) principle, where the first element added is the first one to be removed."
+student_answers = {
+    "student 1": "A stack is something you use to put plates on in the kitchen, and a queue is a line you stand in at the movie theater.",
+    "student 2": "In a stack, elements are added and removed from the top only. In a queue, elements are added at the back and removed from the front.",
+    "student 3": "A stack uses FIFO, where you remove the item that was added first. A queue uses LIFO, where you remove the item that was added last.",
+    "student 4": "A queue is like waiting in line for a bus, where the first person in line is the first to board. A stack is like a pile of books, where you remove the book from the top of the pile first.",
+    "student 5": "Both stack and queue are containers to store data, but a stack operates on LIFO, meaning the last element added is the first to be removed. A queue operates on FIFO, meaning the first element added is the first to be removed. This principle is fundamental in many algorithms and data structure implementations."
+}
+
+expected_format = {
+    "grades": {
+        "student 1": {
+            "score": int,
+            "remark": str
+        },
+        "student 2": {
+            "score": int,
+            "remark": str
+        },
+        "student 3": {
+            "score": int,
+            "remark": str
+        },
+    }
+}
+
+userprompt = f""" you are a teacher who needs to grade student answers relative to a expected answer out of 10 given by the teacher, please be strict as the students need to be able to understand this topic clearly look for key words, examples etc. if the student has tried to be funny in someway or not serious mention in remark
+question = {question}
+expected = {expected_answer}
+student answers = {student_answers}
+
+follow this json format below for output this is just a sample for you to understand the required output structure
+expected format = {expected_format}
+
+"""
+chat_completion, *_ = client.chat.completions.create(
+    messages=[
+        {"role": "system", "content": "please output valid JSON"},
+        {"role": "user", "content": userprompt}
+
+    ],
+    model="gpt-4-1106-preview",
+    response_format={"type": "json_object"},
+).choices
+content = chat_completion.message.content
+reply = json.loads(content)
+print(content)
+
