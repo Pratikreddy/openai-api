@@ -1,0 +1,27 @@
+#get the output from gpt 4 turbo models in the form of a json
+
+import json
+from openai import OpenAI
+
+api_key= ""
+client = OpenAI(api_key=api_key)
+
+expected_format = {}
+
+userprompt = f"""
+"""
+system_prompt = f"""
+"""
+
+chat_completion, *_ = client.chat.completions.create(
+    messages=[
+        {"role": "system", "content": "please output valid JSON"},
+        {"role": "user", "content": userprompt}
+
+    ],
+    model="gpt-4-1106-preview",
+    response_format={"type": "json_object"},
+).choices
+
+content = chat_completion.message.content
+print(content)
